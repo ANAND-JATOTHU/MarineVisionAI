@@ -36,11 +36,6 @@ export default function App() {
              material_estimate: "Soft (Nylon)"
            }]);
         }
-        
-        if (Math.random() > 0.95 && simTick > 10) { // 5% chance every second to detect hardware after 10s
-          setIsHardwareConnected(true)
-          setIsSimulating(false) // Auto switch from simulation to real hardware stream
-        }
       }
     }, 1000)
     return () => clearInterval(hwPoll)
