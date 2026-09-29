@@ -16,6 +16,24 @@ const auvIcon = new Icon({
   iconAnchor: [16, 16]
 })
 
+const blueIcon = new Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  shadowSize: [41, 41]
+});
+
+const greenIcon = new Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  shadowSize: [41, 41]
+});
+
 function MapFlyTo({ detections }) {
   const map = useMap();
   useEffect(() => {
@@ -53,7 +71,7 @@ export default function LeafletMap({ detections, selectedDetection, simTick = 0 
         <MapFlyTo detections={detections} />
         
         {detections.map(det => (
-          <Marker key={det.id} position={[det.latitude, det.longitude]} icon={customIcon}>
+          <Marker key={det.id} position={[det.latitude, det.longitude]} icon={det.status === 'confirmed' ? greenIcon : blueIcon}>
             <Popup className="custom-popup">
               <div style={{ fontFamily: 'var(--font-mono)' }}>
                 <strong>{det.class_name.toUpperCase()}</strong><br/>

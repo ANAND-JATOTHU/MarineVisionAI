@@ -8,36 +8,35 @@ export default function WaterfallCanvas() {
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     let animationFrameId
+    let offset = 0
     
-    // Procedural sonar waterfall generation (Mock)
-    const draw = () => {
-      const width = canvas.width
-      const height = canvas.height
-      
-      // Shift down
-      const imgData = ctx.getImageData(0, 0, width, height - 2)
-      ctx.putImageData(imgData, 0, 2)
-      
-      // Draw new scanline at top
-      ctx.fillStyle = '#0c182b'
-      ctx.fillRect(0, 0, width, 2)
-      
-      for(let i=0; i<width; i+=4) {
-        if(Math.random() > 0.8) {
-          const intensity = Math.floor(Math.random() * 50) + 10
-          ctx.fillStyle = `rgb(${intensity}, ${intensity+20}, ${intensity+40})`
-          ctx.fillRect(i, 0, 4, 2)
-        }
+    const bgImage = new Image()
+    bgImage.src = '/waterfall_bg.jpg'
+    
+    bgImage.onload = () => {
+      const draw = () => {
+        const width = canvas.width
+        const height = canvas.height
+        
+        ctx.clearRect(0, 0, width, height)
+        
+        // Draw scrolling background
+        offset += 1.5 // Scroll speed
+        if (offset >= bgImage.height) offset = 0
+        
+        ctx.drawImage(bgImage, 0, offset - bgImage.height, width, bgImage.height)
+        ctx.drawImage(bgImage, 0, offset, width, bgImage.height)
+        
+        // Draw nadir (center line)
+        ctx.fillStyle = '#0a1020'
+        ctx.fillRect(width/2 - 4, 0, 8, height)
+        ctx.fillStyle = '#1e3a8a'
+        ctx.fillRect(width/2 - 1, 0, 2, height)
+        
+        animationFrameId = requestAnimationFrame(draw)
       }
-      
-      // Draw nadir (center line)
-      ctx.fillStyle = '#1e3a8a'
-      ctx.fillRect(width/2 - 2, 0, 4, 2)
-      
-      animationFrameId = requestAnimationFrame(draw)
+      draw()
     }
-    
-    draw()
     
     return () => cancelAnimationFrame(animationFrameId)
   }, [])

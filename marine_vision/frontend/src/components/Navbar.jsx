@@ -122,12 +122,23 @@ export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnec
         
         {!isHardwareConnected && !isSimulating && (
           <button 
-            onClick={() => {
+            onClick={async () => {
               setIsConnecting(true)
-              setTimeout(() => {
+              try {
+                const res = await fetch("http://127.0.0.1:8000/api/hardware-status")
+                const data = await res.json()
                 setIsConnecting(false)
                 setIsHardwareConnected(true)
-              }, 2000)
+                if (data.status === "connected") {
+                  alert(`Connected to hardware: ${data.devices.join(', ')}`)
+                } else {
+                  alert("Warning: No hardware found. Operating in simulated hardware mode.")
+                }
+              } catch (e) {
+                setIsConnecting(false)
+                setIsHardwareConnected(true)
+                alert("Warning: Hardware API not reachable. Operating in simulated hardware mode.")
+              }
             }}
             disabled={isConnecting}
             style={{
@@ -173,7 +184,24 @@ export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnec
         </button>
 
         <button 
-          onClick={handleExport}
+          onClick={handleExportExcel}
+          style={{
+            background: 'var(--bg-panel)',
+            border: '1px solid var(--border-glass)',
+            color: 'var(--text-primary)',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          <Database size={18} /> EXPORT EXCEL
+        </button>
+
+        <button 
+          onClick={handleExportPdf}
           style={{
           background: 'transparent',
           border: '1px solid var(--border-glass)',
