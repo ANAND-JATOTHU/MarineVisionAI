@@ -4,6 +4,8 @@ import { useRef, useState } from 'react'
 export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnected, setIsHardwareConnected, onOpenSettings, onImageAnalyzed, detections }) {
   const fileInputRef = useRef(null)
   const [isUploading, setIsUploading] = useState(false)
+  const [uploadedFilename, setUploadedFilename] = useState("Awaiting log...")
+  const [isConnecting, setIsConnecting] = useState(false)
   
   const handleExport = async () => {
     try {
@@ -40,6 +42,7 @@ export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnec
       const data = await res.json();
       if (data.status === "success") {
         onImageAnalyzed(data.detections);
+        setUploadedFilename(file.name);
         alert(`Processed ${file.name}! Target plotted on map.`);
       }
     } catch (err) {
@@ -70,9 +73,10 @@ export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnec
           fontSize: '0.75rem', 
           color: 'var(--accent-cyan)',
           border: '1px solid var(--border-glass)',
-          marginLeft: '12px'
+          marginLeft: '12px',
+          fontFamily: 'var(--font-mono)'
         }}>
-          mission_2026_09_21.xtf
+          {uploadedFilename}
         </span>
       </div>
 
@@ -118,20 +122,27 @@ export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnec
         
         {!isHardwareConnected && !isSimulating && (
           <button 
-            onClick={() => setIsHardwareConnected(true)}
+            onClick={() => {
+              setIsConnecting(true)
+              setTimeout(() => {
+                setIsConnecting(false)
+                setIsHardwareConnected(true)
+              }, 2000)
+            }}
+            disabled={isConnecting}
             style={{
-              background: 'transparent',
+              background: isConnecting ? 'rgba(0, 255, 136, 0.1)' : 'transparent',
               border: '1px solid #00FF88',
               color: '#00FF88',
               padding: '8px 16px',
               borderRadius: '6px',
-              cursor: 'pointer',
+              cursor: isConnecting ? 'wait' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               gap: '8px'
             }}
           >
-            <Usb size={18} /> CONNECT HARDWARE
+            <Usb size={18} /> {isConnecting ? 'CONNECTING...' : 'CONNECT HARDWARE'}
           </button>
         )}
 

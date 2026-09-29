@@ -1,4 +1,5 @@
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
+import { useEffect } from 'react'
 import { Icon } from 'leaflet'
 import { motion } from 'framer-motion'
 
@@ -14,6 +15,20 @@ const auvIcon = new Icon({
   iconSize: [32, 32],
   iconAnchor: [16, 16]
 })
+
+function MapFlyTo({ detections }) {
+  const map = useMap();
+  useEffect(() => {
+    if (detections && detections.length > 0) {
+      const latest = detections[detections.length - 1];
+      map.flyTo([latest.latitude, latest.longitude], map.getZoom(), {
+        animate: true,
+        duration: 1.5
+      });
+    }
+  }, [detections, map]);
+  return null;
+}
 
 export default function LeafletMap({ detections, selectedDetection, simTick = 0 }) {
   const defaultCenter = [12.5000, 80.5000] // Pure Ocean (Bay of Bengal)
@@ -34,6 +49,8 @@ export default function LeafletMap({ detections, selectedDetection, simTick = 0 
           attribution='&copy; OpenStreetMap'
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        
+        <MapFlyTo detections={detections} />
         
         {detections.map(det => (
           <Marker key={det.id} position={[det.latitude, det.longitude]} icon={customIcon}>
