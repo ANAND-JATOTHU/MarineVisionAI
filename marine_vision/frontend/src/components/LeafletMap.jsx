@@ -16,14 +16,14 @@ export default function LeafletMap({ detections, selectedDetection }) {
     <div style={{ flex: 1, position: 'relative' }}>
       <MapContainer 
         center={defaultCenter} 
-        zoom={16} 
+        zoom={14} 
         zoomControl={false}
         style={{ height: '100%', width: '100%', background: '#0a101d' }}
       >
-        {/* Offline TileLayer pointing to local static files */}
+        {/* TRUE OFFLINE MAP TILES - Loaded from local /tiles directory */}
         <TileLayer
-          attribution='&copy; OpenStreetMap'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" // Dark theme maps
+          attribution='Offline MarineVision System'
+          url="/tiles/{z}/{x}/{y}.png"
         />
         
         {detections.map(det => (
