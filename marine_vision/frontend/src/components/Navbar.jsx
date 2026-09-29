@@ -1,6 +1,6 @@
 import { Anchor, Download, Settings, Activity } from 'lucide-react'
 
-export default function Navbar({ isSimulating, setIsSimulating }) {
+export default function Navbar({ isSimulating, setIsSimulating, onOpenSettings }) {
   return (
     <div className="glass-panel" style={{
       height: '60px',
@@ -47,21 +47,28 @@ export default function Navbar({ isSimulating, setIsSimulating }) {
           {isSimulating ? "STOP SIMULATION" : "START STREAM"}
         </button>
 
-        <button style={{
-          background: 'transparent',
-          border: '1px solid var(--border-glass)',
-          color: 'var(--text-main)',
-          padding: '8px 16px',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px'
-        }}>
-          <Download size={18} /> EXPORT PDF
-        </button>
+        <a href="http://127.0.0.1:8000/api/export-report" target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+          <button style={{
+            background: 'transparent',
+            border: '1px solid var(--border-glass)',
+            color: 'var(--text-main)',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <Download size={18} /> EXPORT PDF
+          </button>
+        </a>
         
-        <Settings size={20} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
+        <button 
+          onClick={onOpenSettings}
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+        >
+          <Settings size={20} color="var(--text-muted)" />
+        </button>
       </div>
     </div>
   )

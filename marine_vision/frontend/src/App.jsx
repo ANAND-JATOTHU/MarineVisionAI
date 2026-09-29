@@ -6,8 +6,10 @@ import WaterfallCanvas from './components/WaterfallCanvas'
 import LeafletMap from './components/LeafletMap'
 import DetectionDrawer from './components/DetectionDrawer'
 import StatusFooter from './components/StatusFooter'
+import SettingsModal from './components/SettingsModal'
 
 export default function App() {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [telemetry, setTelemetry] = useState({ pitch: 0, roll: 0, heave: 0, depth: 0, speed: 0 })
   const [detections, setDetections] = useState([])
   const [isSimulating, setIsSimulating] = useState(false)
@@ -51,7 +53,13 @@ export default function App() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw' }}>
-      <Navbar isSimulating={isSimulating} setIsSimulating={setIsSimulating} />
+      <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+      
+      <Navbar 
+        isSimulating={isSimulating} 
+        setIsSimulating={setIsSimulating} 
+        onOpenSettings={() => setIsSettingsOpen(true)}
+      />
       
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <Sidebar telemetry={telemetry} />

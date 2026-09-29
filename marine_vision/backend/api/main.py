@@ -8,6 +8,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import uvicorn
+import pandas as pd
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+import tempfile
 
 from marine_vision.backend.db.database import init_db
 from marine_vision.backend.api.inference import inference_engine
@@ -44,6 +48,45 @@ def health_check():
 @app.get("/api/mission/{mission_id}/detections")
 def get_detections(mission_id: str):
     return []
+
+@app.get("/api/export-report")
+def export_report():
+    # Mock data for demonstration, normally would query from DB
+    data = [
+        {"class": "plastic_bottle", "lat": 13.0242, "lon": 80.2413, "conf": 0.89, "material": "Medium (Plastic)"},
+        {"class": "metal_debris", "lat": 13.0248, "lon": 80.2415, "conf": 0.95, "material": "Hard (Metal)"},
+        {"class": "ghost_net", "lat": 13.0240, "lon": 80.2410, "conf": 0.75, "material": "Soft (Net)"}
+    ]
+    df = pd.DataFrame(data)
+    
+    # Generate PDF
+    temp_pdf_path = os.path.join(tempfile.gettempdir(), "marine_vision_report.pdf")
+    c = canvas.Canvas(temp_pdf_path, pagesize=letter)
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(50, 750, "MarineVision AI - Dive Target Report")
+    c.setFont("Helvetica", 10)
+    c.drawString(50, 730, "Automated Underwater Debris Detection System")
+    
+    y = 680
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(50, y, "Class")
+    c.drawString(150, y, "Latitude")
+    c.drawString(250, y, "Longitude")
+    c.drawString(350, y, "Confidence")
+    c.drawString(450, y, "Material")
+    y -= 20
+    
+    c.setFont("Helvetica", 10)
+    for _, row in df.iterrows():
+        c.drawString(50, y, str(row['class']))
+        c.drawString(150, y, f"{row['lat']:.5f}")
+        c.drawString(250, y, f"{row['lon']:.5f}")
+        c.drawString(350, y, f"{row['conf']*100:.1f}%")
+        c.drawString(450, y, str(row['material']))
+        y -= 20
+        
+    c.save()
+    return FileResponse(temp_pdf_path, media_type="application/pdf", filename="marine_vision_report.pdf")
 
 # WebSocket for live AUV stream simulation
 @app.websocket("/ws/simulation/{mission_id}")
