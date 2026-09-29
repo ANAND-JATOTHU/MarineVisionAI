@@ -9,8 +9,8 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import uvicorn
 
-from backend.db.database import init_db
-from backend.api.inference import inference_engine
+from marine_vision.backend.db.database import init_db
+from marine_vision.backend.api.inference import inference_engine
 
 app = FastAPI(title="MarineVision AI Backend")
 
