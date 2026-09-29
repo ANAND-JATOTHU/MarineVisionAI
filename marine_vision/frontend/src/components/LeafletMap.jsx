@@ -10,7 +10,7 @@ const customIcon = new Icon({
 })
 
 export default function LeafletMap({ detections, selectedDetection }) {
-  const defaultCenter = [13.0241, 80.2411] // Chennai coast mock
+  const defaultCenter = [12.5000, 80.5000] // Pure Ocean (Bay of Bengal)
 
   return (
     <div style={{ flex: 1, position: 'relative' }}>

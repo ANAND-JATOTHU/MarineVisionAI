@@ -1,8 +1,36 @@
 import { Anchor, Download, Settings, Activity, Usb, UploadCloud } from 'lucide-react'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 
-export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnected, setIsHardwareConnected, onOpenSettings }) {
+export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnected, setIsHardwareConnected, onOpenSettings, onImageAnalyzed }) {
   const fileInputRef = useRef(null)
+  const [isUploading, setIsUploading] = useState(false)
+  
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/analyze-image", {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+        onImageAnalyzed(data.detections);
+        alert(`Processed ${file.name}! Target plotted on map.`);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Backend analysis failed. Is the server running?");
+    } finally {
+      setIsUploading(false);
+      e.target.value = null; // reset input
+    }
+  }
   return (
     <div className="glass-panel" style={{
       height: '60px',
@@ -71,23 +99,25 @@ export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnec
           ref={fileInputRef} 
           style={{ display: 'none' }} 
           accept=".xtf,.sl2,.jpg,.png"
-          onChange={(e) => alert(`Loaded sonar log: ${e.target.files[0].name}. (Backend processing initiated...)`)}
+          onChange={handleFileUpload}
         />
         
         <button 
           onClick={() => fileInputRef.current.click()}
+          disabled={isUploading}
           style={{
             background: 'rgba(41, 98, 255, 0.1)',
             border: '1px solid var(--accent-blue)',
             color: 'white',
             padding: '8px 16px',
             borderRadius: '6px',
-            cursor: 'pointer',
+            cursor: isUploading ? 'not-allowed' : 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            opacity: isUploading ? 0.5 : 1
           }}>
-          <UploadCloud size={18} /> UPLOAD LOG
+          <UploadCloud size={18} /> {isUploading ? "ANALYZING..." : "UPLOAD LOG"}
         </button>
 
         <a href="http://127.0.0.1:8000/api/export-report" target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>

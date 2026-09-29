@@ -14,8 +14,8 @@ def download_tiles(min_lat, max_lat, min_lon, max_lon, min_z, max_z, output_dir)
     print(f"Downloading tiles to {output_dir}")
     os.makedirs(output_dir, exist_ok=True)
     
-    # We use CartoDB dark tiles to match the Dark Oceanic Command Center theme
-    base_url = "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+    # Use standard OSM to avoid CartoDB API key requirement
+    base_url = "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
     
     total_tiles = 0
     downloaded = 0
@@ -62,12 +62,12 @@ def download_tiles(min_lat, max_lat, min_lon, max_lon, min_z, max_z, output_dir)
     print("Tile download complete.")
 
 if __name__ == "__main__":
-    # Chennai coast Indian Ocean bounding box (small test area)
-    # Center: 13.0241, 80.2411
-    MIN_LAT = 13.0000
-    MAX_LAT = 13.0500
-    MIN_LON = 80.2200
-    MAX_LON = 80.2700
+    # Pure Ocean bounding box (Bay of Bengal, East of Chennai)
+    # Center: 12.5000, 80.5000
+    MIN_LAT = 12.4500
+    MAX_LAT = 12.5500
+    MIN_LON = 80.4500
+    MAX_LON = 80.5500
     
     # Store directly in frontend public directory so Vite can serve it
     OUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../frontend/public/tiles"))

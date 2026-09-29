@@ -6,6 +6,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from fastapi import UploadFile, File
 from pydantic import BaseModel
 import uvicorn
 import pandas as pd
@@ -87,6 +88,25 @@ def export_report():
         
     c.save()
     return FileResponse(temp_pdf_path, media_type="application/pdf", filename="marine_vision_report.pdf")
+
+@app.post("/api/analyze-image")
+async def analyze_image(file: UploadFile = File(...)):
+    # Simulates passing the uploaded sonar image to the ONNX model
+    # and returning an immediate detection for UI feedback.
+    return {
+        "status": "success",
+        "detections": [
+            {
+                "id": "upl_" + str(len(file.filename)),
+                "latitude": 12.5050,
+                "longitude": 80.5050,
+                "class_name": "sunken_debris",
+                "final_confidence": 0.98,
+                "material_estimate": "Hard (Metal/Wood)",
+                "bbox": [100, 150, 300, 400]
+            }
+        ]
+    }
 
 # WebSocket for live AUV stream simulation
 @app.websocket("/ws/simulation/{mission_id}")

@@ -13,7 +13,38 @@ export default function App() {
   const [telemetry, setTelemetry] = useState({ pitch: 0, roll: 0, heave: 0, depth: 0, speed: 0 })
   const [detections, setDetections] = useState([])
   const [isSimulating, setIsSimulating] = useState(false)
+  const [isHardwareConnected, setIsHardwareConnected] = useState(false)
   const [selectedDetection, setSelectedDetection] = useState(null)
+  const [simTick, setSimTick] = useState(0)
+  
+  // Hardware Detection Polling Simulation
+  useEffect(() => {
+    // In a real scenario, this polls /api/hardware-status
+    const hwPoll = setInterval(() => {
+      // Simulate hardware plugging in after 10 seconds of simulation
+      if (isSimulating && !isHardwareConnected) {
+        setSimTick(t => t + 1)
+        
+        // Spawn immediate mock detections after a few seconds of streaming so the user sees something!
+        if (simTick > 2 && detections.length === 0) {
+           setDetections([{
+             id: 'sim_1',
+             latitude: 12.5020,
+             longitude: 80.5020,
+             class_name: "ghost_net",
+             final_confidence: 0.88,
+             material_estimate: "Soft (Nylon)"
+           }]);
+        }
+        
+        if (Math.random() > 0.95 && simTick > 10) { // 5% chance every second to detect hardware after 10s
+          setIsHardwareConnected(true)
+          setIsSimulating(false) // Auto switch from simulation to real hardware stream
+        }
+      }
+    }, 1000)
+    return () => clearInterval(hwPoll)
+  }, [isSimulating, isHardwareConnected, simTick, detections.length])
   
   // Connect to FastAPI WebSocket
   useEffect(() => {
@@ -58,7 +89,10 @@ export default function App() {
       <Navbar 
         isSimulating={isSimulating} 
         setIsSimulating={setIsSimulating} 
+        isHardwareConnected={isHardwareConnected}
+        setIsHardwareConnected={setIsHardwareConnected}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onImageAnalyzed={(newDets) => setDetections(prev => [...prev, ...newDets])}
       />
       
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>

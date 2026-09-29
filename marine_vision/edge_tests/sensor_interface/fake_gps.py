@@ -17,9 +17,9 @@ def run_fake_gps(target_ip="127.0.0.1", port=5000):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     print(f"Broadcasting Fake NMEA GPS data to {target_ip}:{port}...")
 
-    # Start near Chennai coast (matches our downloaded offline tiles)
-    lat = 13.0150
-    lon = 80.2350
+    # Start purely in ocean (Bay of Bengal)
+    lat = 12.5000
+    lon = 80.5000
     
     # Lawnmower search pattern parameters
     speed = 0.0001 # degrees per tick
@@ -29,10 +29,10 @@ def run_fake_gps(target_ip="127.0.0.1", port=5000):
         while True:
             # Move AUV
             lon += speed * direction
-            if lon > 80.2600:
+            if lon > 80.5400:
                 direction = -1
                 lat += 0.0005 # Move North one lane
-            elif lon < 80.2300:
+            elif lon < 80.4600:
                 direction = 1
                 lat += 0.0005
                 
