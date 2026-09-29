@@ -1,0 +1,477 @@
+{
+  "_meta": {
+    "title": "MarineVisionAI — Module API Boundary Specification",
+    "version": "1.0.0",
+    "project": "AI-Powered Automated Underwater Marine Debris & Anomaly Detection System",
+    "sih_id": "26057",
+    "purpose": "Defines exact JSON schemas so Frontend (Member 3) and Backend (Member 2) can build independently without scanning each other's code.",
+    "last_updated": "2026-09-29",
+    "maintainer": "Team Lead (Anand)"
+  },
+
+  "schemas": {
+
+    "MissionUploadResponse": {
+      "description": "Returned by POST /api/mission/upload after successful file ingestion and AI pipeline execution.",
+      "endpoint": "POST /api/mission/upload",
+      "content_type": "application/json",
+      "fields": {
+        "mission_id": {
+          "type": "string",
+          "format": "uuid-v4",
+          "description": "Unique identifier for this mission/survey log.",
+          "example": "a3f1b2c4-d5e6-7890-abcd-ef1234567890"
+        },
+        "filename": {
+          "type": "string",
+          "description": "Original uploaded file name.",
+          "example": "mission_2026_09_21.xtf"
+        },
+        "file_type": {
+          "type": "string",
+          "enum": ["xtf", "jsf", "png", "jpg"],
+          "description": "Detected file format."
+        },
+        "file_size_bytes": {
+          "type": "integer",
+          "description": "Size of uploaded file in bytes.",
+          "example": 52428800
+        },
+        "total_pings": {
+          "type": "integer",
+          "description": "Total number of sonar pings extracted from the log.",
+          "example": 2450
+        },
+        "swath_width_meters": {
+          "type": "number",
+          "description": "Width of the sonar swath in meters.",
+          "example": 75.0
+        },
+        "start_time": {
+          "type": "string",
+          "format": "ISO-8601",
+          "description": "UTC timestamp of the first ping in the log.",
+          "example": "2026-09-21T08:30:00Z"
+        },
+        "end_time": {
+          "type": "string",
+          "format": "ISO-8601",
+          "description": "UTC timestamp of the last ping in the log.",
+          "example": "2026-09-21T10:45:00Z"
+        },
+        "processing_status": {
+          "type": "string",
+          "enum": ["PENDING", "PARSING", "PROCESSING", "COMPLETED", "FAILED"],
+          "description": "Current pipeline processing status.",
+          "example": "COMPLETED"
+        },
+        "total_detections": {
+          "type": "integer",
+          "description": "Total number of anomalies detected by the AI pipeline.",
+          "example": 7
+        },
+        "detections_summary": {
+          "type": "object",
+          "description": "Breakdown of detections by class.",
+          "properties": {
+            "ghost_net": { "type": "integer", "example": 3 },
+            "pipe": { "type": "integer", "example": 2 },
+            "cylinder": { "type": "integer", "example": 1 },
+            "shipwreck": { "type": "integer", "example": 1 }
+          }
+        },
+        "error_log": {
+          "type": "string",
+          "nullable": true,
+          "description": "Error details if processing failed. Null on success.",
+          "example": null
+        }
+      }
+    },
+
+    "TelemetryPingHeader": {
+      "description": "Per-ping navigation and attitude telemetry extracted from sonar log INS headers. Used by the Left Sidebar telemetry display and for constructing the AUV trackline on the Leaflet map.",
+      "fields": {
+        "ping_number": {
+          "type": "integer",
+          "description": "Sequential ping index within the sonar log (0-based).",
+          "example": 1420
+        },
+        "timestamp_utc": {
+          "type": "string",
+          "format": "ISO-8601",
+          "description": "UTC timestamp of this ping.",
+          "example": "2026-09-21T09:15:42Z"
+        },
+        "latitude": {
+          "type": "number",
+          "format": "WGS84 decimal degrees",
+          "description": "Vehicle latitude at time of ping.",
+          "example": 13.0241
+        },
+        "longitude": {
+          "type": "number",
+          "format": "WGS84 decimal degrees",
+          "description": "Vehicle longitude at time of ping.",
+          "example": 80.2411
+        },
+        "speed_knots": {
+          "type": "number",
+          "description": "Vehicle speed in knots.",
+          "example": 3.2
+        },
+        "heading_deg": {
+          "type": "number",
+          "description": "Vehicle compass heading in degrees (0-360).",
+          "example": 145.7
+        },
+        "pitch_deg": {
+          "type": "number",
+          "description": "Vehicle pitch angle in degrees.",
+          "example": -1.2
+        },
+        "roll_deg": {
+          "type": "number",
+          "description": "Vehicle roll angle in degrees.",
+          "example": 0.8
+        },
+        "heave_m": {
+          "type": "number",
+          "description": "Vertical heave displacement in meters.",
+          "example": 0.15
+        },
+        "altitude_m": {
+          "type": "number",
+          "description": "Vehicle altitude above the seafloor in meters.",
+          "example": 12.4
+        },
+        "depth_m": {
+          "type": "number",
+          "description": "Water depth at this location in meters.",
+          "example": 18.7
+        },
+        "has_motion_dropout": {
+          "type": "boolean",
+          "description": "True if this ping was flagged as having motion-induced corruption.",
+          "example": false
+        }
+      }
+    },
+
+    "DetectionObject": {
+      "description": "A single AI-detected anomaly. Returned in arrays by GET /api/mission/{id}/detections and streamed individually via WS /ws/simulation/{id}.",
+      "endpoint": "GET /api/mission/{id}/detections",
+      "fields": {
+        "detection_id": {
+          "type": "string",
+          "format": "uuid-v4",
+          "description": "Unique identifier for this detection.",
+          "example": "d7e8f9a0-b1c2-3456-def0-123456789abc"
+        },
+        "mission_id": {
+          "type": "string",
+          "format": "uuid-v4",
+          "description": "Parent mission identifier.",
+          "example": "a3f1b2c4-d5e6-7890-abcd-ef1234567890"
+        },
+        "ping_number": {
+          "type": "integer",
+          "description": "Ping row index where the target centers in the waterfall image.",
+          "example": 1420
+        },
+        "class_name": {
+          "type": "string",
+          "enum": ["ghost_net", "pipe", "cylinder", "shipwreck"],
+          "description": "Classified debris type.",
+          "example": "ghost_net"
+        },
+        "detection_type": {
+          "type": "string",
+          "enum": ["mask", "bbox"],
+          "description": "Whether the detection is an instance mask (for nets) or bounding box (for rigid objects).",
+          "example": "mask"
+        },
+        "confidence": {
+          "type": "object",
+          "description": "Multi-signal confidence scores.",
+          "properties": {
+            "yolo_score": {
+              "type": "number",
+              "range": "0.0 - 1.0",
+              "description": "Native ONNX model objectness/confidence score.",
+              "example": 0.88
+            },
+            "shadow_score": {
+              "type": "number",
+              "range": "0.0 - 1.0",
+              "description": "Physical acoustic shadow-geometry consistency score.",
+              "example": 0.92
+            },
+            "persistence_score": {
+              "type": "number",
+              "range": "0.0 - 1.0",
+              "description": "Cross-ping temporal persistence (IoU tracker) score.",
+              "example": 1.0
+            },
+            "final_score": {
+              "type": "number",
+              "range": "0.0 - 1.0",
+              "description": "Composite weighted score: (Wₘ × yolo) + (Wₛ × shadow) + (Wₚ × persistence).",
+              "example": 0.924
+            }
+          }
+        },
+        "bbox": {
+          "type": "array",
+          "items": "number",
+          "length": 4,
+          "description": "Bounding box in pixel coordinates [xmin, ymin, xmax, ymax].",
+          "example": [120, 1400, 280, 1480]
+        },
+        "mask_polygon": {
+          "type": "array",
+          "items": { "type": "array", "items": "number", "length": 2 },
+          "nullable": true,
+          "description": "Instance segmentation polygon vertices [[x1,y1], [x2,y2], ...]. Null for bbox-only detections.",
+          "example": [[125, 1405], [130, 1410], [275, 1475], [260, 1478], [128, 1408]]
+        },
+        "coordinates": {
+          "type": "object",
+          "description": "INS-corrected real-world geospatial position of the detection.",
+          "properties": {
+            "latitude": {
+              "type": "number",
+              "format": "WGS84 decimal degrees",
+              "example": 13.0241
+            },
+            "longitude": {
+              "type": "number",
+              "format": "WGS84 decimal degrees",
+              "example": 80.2411
+            },
+            "depth_m": {
+              "type": "number",
+              "description": "Estimated seafloor depth at detection site.",
+              "example": 18.4
+            }
+          }
+        },
+        "review_status": {
+          "type": "string",
+          "enum": ["UNREVIEWED", "CONFIRMED", "REJECTED"],
+          "description": "Current operator review status.",
+          "default": "UNREVIEWED"
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "ISO-8601",
+          "nullable": true,
+          "description": "Timestamp when the operator reviewed this detection. Null if unreviewed.",
+          "example": null
+        },
+        "created_at": {
+          "type": "string",
+          "format": "ISO-8601",
+          "description": "Timestamp when this detection was created by the AI pipeline.",
+          "example": "2026-09-21T09:16:00Z"
+        }
+      }
+    },
+
+    "ReviewStatusUpdate": {
+      "description": "Request body for POST /api/detection/{id}/review. Sent by the frontend when an operator clicks Confirm or Reject on a detection card.",
+      "endpoint": "POST /api/detection/{id}/review",
+      "content_type": "application/json",
+      "fields": {
+        "status": {
+          "type": "string",
+          "enum": ["CONFIRMED", "REJECTED"],
+          "description": "The operator's review decision.",
+          "example": "CONFIRMED"
+        },
+        "operator_notes": {
+          "type": "string",
+          "nullable": true,
+          "maxLength": 500,
+          "description": "Optional free-text notes from the operator explaining the review decision.",
+          "example": "Confirmed — clear ghost net pattern with consistent shadow geometry."
+        }
+      }
+    },
+
+    "ReviewStatusResponse": {
+      "description": "Response body for POST /api/detection/{id}/review after a successful status update.",
+      "endpoint": "POST /api/detection/{id}/review",
+      "content_type": "application/json",
+      "fields": {
+        "success": {
+          "type": "boolean",
+          "description": "Whether the review was successfully recorded.",
+          "example": true
+        },
+        "detection_id": {
+          "type": "string",
+          "format": "uuid-v4",
+          "description": "The detection that was reviewed.",
+          "example": "d7e8f9a0-b1c2-3456-def0-123456789abc"
+        },
+        "previous_status": {
+          "type": "string",
+          "enum": ["UNREVIEWED", "CONFIRMED", "REJECTED"],
+          "description": "Status before this review.",
+          "example": "UNREVIEWED"
+        },
+        "new_status": {
+          "type": "string",
+          "enum": ["CONFIRMED", "REJECTED"],
+          "description": "Status after this review.",
+          "example": "CONFIRMED"
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "ISO-8601",
+          "description": "Timestamp of the review action.",
+          "example": "2026-09-21T09:20:15Z"
+        }
+      }
+    },
+
+    "ExportRequest": {
+      "description": "Query parameters for GET /api/mission/{id}/export/{format}.",
+      "endpoint": "GET /api/mission/{id}/export/{format}",
+      "path_params": {
+        "id": { "type": "string", "format": "uuid-v4", "description": "Mission ID" },
+        "format": { "type": "string", "enum": ["pdf", "csv", "json"], "description": "Export format" }
+      },
+      "query_params": {
+        "include_confirmed": { "type": "boolean", "default": true, "description": "Include CONFIRMED detections" },
+        "include_unreviewed": { "type": "boolean", "default": false, "description": "Include UNREVIEWED detections" },
+        "include_rejected": { "type": "boolean", "default": false, "description": "Include REJECTED detections (for audit)" }
+      }
+    },
+
+    "WebSocketSimulationMessage": {
+      "description": "Individual message streamed via WS /ws/simulation/{id}. Each message represents one ping row being 'played back' to simulate a live AUV mission.",
+      "endpoint": "WS /ws/simulation/{id}",
+      "fields": {
+        "type": {
+          "type": "string",
+          "enum": ["ping", "detection", "mission_complete", "error"],
+          "description": "Type of WebSocket message."
+        },
+        "payload": {
+          "type": "object",
+          "description": "Message payload. Structure depends on 'type'.",
+          "variants": {
+            "ping": {
+              "description": "A single sonar ping with telemetry. Sent for each ping during simulation.",
+              "fields": {
+                "telemetry": "TelemetryPingHeader",
+                "intensity_row": {
+                  "type": "array",
+                  "items": "number",
+                  "description": "Normalized pixel intensity values (0.0-1.0) for this ping row."
+                }
+              }
+            },
+            "detection": {
+              "description": "A detection event triggered during simulation playback.",
+              "fields": "DetectionObject"
+            },
+            "mission_complete": {
+              "description": "Sent when all pings have been streamed.",
+              "fields": {
+                "total_pings_streamed": { "type": "integer" },
+                "total_detections": { "type": "integer" }
+              }
+            },
+            "error": {
+              "description": "Sent if an error occurs during simulation.",
+              "fields": {
+                "message": { "type": "string" },
+                "recoverable": { "type": "boolean" }
+              }
+            }
+          }
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "ISO-8601",
+          "description": "Server timestamp when this message was generated."
+        }
+      }
+    },
+
+    "SystemHealthCheck": {
+      "description": "Response for GET /api/health. Used by the frontend status pill to verify backend connectivity.",
+      "endpoint": "GET /api/health",
+      "fields": {
+        "status": {
+          "type": "string",
+          "enum": ["online", "degraded"],
+          "description": "System health status.",
+          "example": "online"
+        },
+        "model_loaded": {
+          "type": "boolean",
+          "description": "Whether the ONNX model is loaded and ready for inference.",
+          "example": true
+        },
+        "database_ok": {
+          "type": "boolean",
+          "description": "Whether the SQLite database is accessible and healthy.",
+          "example": true
+        },
+        "tiles_available": {
+          "type": "boolean",
+          "description": "Whether offline map tiles are present in the tile cache directory.",
+          "example": true
+        },
+        "uptime_seconds": {
+          "type": "integer",
+          "description": "Server uptime in seconds.",
+          "example": 3600
+        }
+      }
+    }
+  },
+
+  "api_endpoints_summary": [
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "request": null,
+      "response": "SystemHealthCheck"
+    },
+    {
+      "method": "POST",
+      "path": "/api/mission/upload",
+      "request": "multipart/form-data (file field)",
+      "response": "MissionUploadResponse"
+    },
+    {
+      "method": "GET",
+      "path": "/api/mission/{id}/detections",
+      "request": null,
+      "response": "DetectionObject[]"
+    },
+    {
+      "method": "POST",
+      "path": "/api/detection/{id}/review",
+      "request": "ReviewStatusUpdate",
+      "response": "ReviewStatusResponse"
+    },
+    {
+      "method": "GET",
+      "path": "/api/mission/{id}/export/{format}",
+      "request": "ExportRequest (query params)",
+      "response": "File download (PDF/CSV/JSON)"
+    },
+    {
+      "method": "WS",
+      "path": "/ws/simulation/{id}",
+      "request": null,
+      "response": "WebSocketSimulationMessage (streamed)"
+    }
+  ]
+}

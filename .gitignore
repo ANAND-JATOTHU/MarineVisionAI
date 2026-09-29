@@ -1,0 +1,92 @@
+# ============================================================
+# .gitignore — MarineVisionAI Repository
+# ============================================================
+# Prevents large binaries, secrets, and auto-generated files
+# from being committed to version control.
+# ============================================================
+
+# ── Python ──────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+venv/
+.venv/
+env/
+dist/
+build/
+
+# ── Node.js ─────────────────────────────────────────────────
+node_modules/
+.npm/
+package-lock.json
+
+# ── IDE & Editors ───────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.cursor/
+
+# ── OS Generated ───────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── AI Model Weights (LARGE BINARIES — DO NOT COMMIT) ──────
+*.onnx
+*.pt
+*.pth
+*.tflite
+*.engine
+*.plan
+
+# ── Sonar Log Data (LARGE BINARIES) ────────────────────────
+*.xtf
+*.jsf
+
+# ── Database Files ──────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+
+# ── Image & Media Assets ────────────────────────────────────
+# (Sonar waterfall images, training images, map tiles)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tif
+*.tiff
+*.mp4
+*.avi
+
+# ── Log Files ───────────────────────────────────────────────
+*.log
+logs/
+
+# ── Environment & Secrets ──────────────────────────────────
+.env
+.env.local
+.env.production
+
+# ── Training Runs (Ultralytics auto-generated) ─────────────
+marine_vision/model_training/runs/
+marine_vision/model_training/datasets/images/
+marine_vision/model_training/datasets/labels/
+
+# ── Frontend Build Output ──────────────────────────────────
+marine_vision/frontend/dist/
+marine_vision/frontend/node_modules/
+
+# ── Offline Map Tiles (LARGE — cached separately) ──────────
+marine_vision/frontend/src/static/tiles/
+
+# ── Temporary Exports ──────────────────────────────────────
+tmp/
+exports/
