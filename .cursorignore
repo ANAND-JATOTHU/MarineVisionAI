@@ -1,0 +1,96 @@
+# ============================================================
+# .cursorignore — Token Optimization for AI Coding Agents
+# ============================================================
+# Prevents AI assistants from wasting context tokens reading
+# large binary, auto-generated, or dependency files.
+# ============================================================
+
+# ── Package Manager Dependencies ────────────────────────────
+node_modules/
+.npm/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ── Python Virtual Environments ─────────────────────────────
+venv/
+.venv/
+env/
+.env/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+
+# ── Build & Distribution Outputs ────────────────────────────
+dist/
+build/
+*.egg
+.next/
+out/
+
+# ── Sonar Log Binary Data ───────────────────────────────────
+*.xtf
+*.jsf
+
+# ── Database Files ──────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+
+# ── AI Model Weights & Checkpoints ──────────────────────────
+*.onnx
+*.pt
+*.pth
+*.tflite
+*.engine
+*.plan
+
+# ── Image & Media Assets ────────────────────────────────────
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tif
+*.tiff
+*.ico
+*.webp
+*.svg
+*.mp4
+*.avi
+*.mov
+*.webm
+
+# ── Log Files ───────────────────────────────────────────────
+*.log
+logs/
+
+# ── Offline Map Tile Cache ──────────────────────────────────
+**/tiles/
+
+# ── IDE & Editor Configs ────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── OS Generated Files ─────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Training Artifacts (Large) ──────────────────────────────
+marine_vision/model_training/runs/
+marine_vision/model_training/datasets/
+
+# ── Docker Build Context Noise ──────────────────────────────
+.dockerignore
+
+# ── Git Internals ───────────────────────────────────────────
+.git/
+
+# ── Compiled Documentation ──────────────────────────────────
+files/*.docx
