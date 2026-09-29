@@ -97,6 +97,7 @@ export default function App() {
         setIsHardwareConnected={setIsHardwareConnected}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onImageAnalyzed={(newDets) => setDetections(prev => [...prev, ...newDets])}
+        detections={detections}
       />
       
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
@@ -104,7 +105,7 @@ export default function App() {
         
         <div style={{ display: 'flex', flexDirection: 'column', flex: 1, position: 'relative' }}>
           <WaterfallCanvas />
-          <LeafletMap detections={detections} selectedDetection={selectedDetection} />
+          <LeafletMap detections={detections} selectedDetection={selectedDetection} simTick={simTick} />
           
           <AnimatePresence>
             {isSimulating && (

@@ -1,9 +1,28 @@
 import { Anchor, Download, Settings, Activity, Usb, UploadCloud } from 'lucide-react'
 import { useRef, useState } from 'react'
 
-export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnected, setIsHardwareConnected, onOpenSettings, onImageAnalyzed }) {
+export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnected, setIsHardwareConnected, onOpenSettings, onImageAnalyzed, detections }) {
   const fileInputRef = useRef(null)
   const [isUploading, setIsUploading] = useState(false)
+  
+  const handleExport = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/export-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ detections })
+      });
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "marine_vision_report.pdf";
+      a.click();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to export PDF.");
+    }
+  }
   
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -59,7 +78,9 @@ export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnec
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
         {isHardwareConnected ? (
-          <div style={{
+          <button 
+            onClick={() => setIsHardwareConnected(false)}
+            style={{
             background: 'rgba(0, 255, 136, 0.2)',
             border: '1px solid #00FF88',
             color: 'white',
@@ -68,11 +89,12 @@ export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnec
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            fontWeight: '600'
+            fontWeight: '600',
+            cursor: 'pointer'
           }}>
             <Usb size={18} color="#00FF88" />
-            LIVE HARDWARE CONNECTED
-          </div>
+            DISCONNECT HARDWARE
+          </button>
         ) : (
           <button 
             onClick={() => setIsSimulating(!isSimulating)}
@@ -91,6 +113,25 @@ export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnec
           >
             <Activity size={18} color={isSimulating ? 'var(--accent-red)' : 'var(--accent-cyan)'} />
             {isSimulating ? "STOP SIMULATION" : "START SIMULATED TEST (1Hr)"}
+          </button>
+        )}
+        
+        {!isHardwareConnected && !isSimulating && (
+          <button 
+            onClick={() => setIsHardwareConnected(true)}
+            style={{
+              background: 'transparent',
+              border: '1px solid #00FF88',
+              color: '#00FF88',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <Usb size={18} /> CONNECT HARDWARE
           </button>
         )}
 
@@ -120,21 +161,21 @@ export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnec
           <UploadCloud size={18} /> {isUploading ? "ANALYZING..." : "UPLOAD LOG"}
         </button>
 
-        <a href="http://127.0.0.1:8000/api/export-report" target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
-          <button style={{
-            background: 'transparent',
-            border: '1px solid var(--border-glass)',
-            color: 'var(--text-main)',
-            padding: '8px 16px',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <Download size={18} /> EXPORT PDF
-          </button>
-        </a>
+        <button 
+          onClick={handleExport}
+          style={{
+          background: 'transparent',
+          border: '1px solid var(--border-glass)',
+          color: 'var(--text-main)',
+          padding: '8px 16px',
+          borderRadius: '6px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <Download size={18} /> EXPORT PDF
+        </button>
         
         <button 
           onClick={onOpenSettings}

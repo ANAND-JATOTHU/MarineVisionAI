@@ -9,25 +9,30 @@ const customIcon = new Icon({
   iconAnchor: [12, 12]
 })
 
-export default function LeafletMap({ detections, selectedDetection }) {
+const auvIcon = new Icon({
+  iconUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="%23FFA500" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12l-5-5v10z"></path><path d="M2 12h15"></path></svg>',
+  iconSize: [32, 32],
+  iconAnchor: [16, 16]
+})
+
+export default function LeafletMap({ detections, selectedDetection, simTick = 0 }) {
   const defaultCenter = [12.5000, 80.5000] // Pure Ocean (Bay of Bengal)
+  
+  // AUV position simulates moving east slowly
+  const auvPos = [12.5000, 80.5000 + (simTick * 0.0001)]
 
   return (
     <div style={{ flex: 1, position: 'relative' }}>
       <MapContainer 
         center={defaultCenter} 
-        zoom={14} 
-        minZoom={10}
-        maxZoom={14}
-        zoomControl={false}
+        zoom={12} 
+        zoomControl={true}
         style={{ height: '100%', width: '100%', background: '#0a101d' }}
       >
-        {/* TRUE OFFLINE MAP TILES - Loaded from local /tiles directory */}
+        {/* ONLINE MAP TILES FOR FREE ZOOMING */}
         <TileLayer
-          attribution='Offline MarineVision System'
-          url="/tiles/{z}/{x}/{y}.png"
-          minZoom={10}
-          maxZoom={14}
+          attribution='&copy; OpenStreetMap'
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
         {detections.map(det => (
@@ -41,6 +46,16 @@ export default function LeafletMap({ detections, selectedDetection }) {
             </Popup>
           </Marker>
         ))}
+        
+        {/* Live AUV Location Marker */}
+        <Marker position={auvPos} icon={auvIcon}>
+          <Popup className="custom-popup">
+            <div style={{ fontFamily: 'var(--font-mono)' }}>
+              <strong>AUV CURRENT POSITION</strong><br/>
+              Simulating survey path
+            </div>
+          </Popup>
+        </Marker>
       </MapContainer>
       
       {/* Absolute overlay for styling */}
