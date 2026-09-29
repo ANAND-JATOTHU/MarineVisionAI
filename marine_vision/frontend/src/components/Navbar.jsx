@@ -1,6 +1,8 @@
-import { Anchor, Download, Settings, Activity } from 'lucide-react'
+import { Anchor, Download, Settings, Activity, Usb, UploadCloud } from 'lucide-react'
+import { useRef } from 'react'
 
-export default function Navbar({ isSimulating, setIsSimulating, onOpenSettings }) {
+export default function Navbar({ isSimulating, setIsSimulating, isHardwareConnected, setIsHardwareConnected, onOpenSettings }) {
+  const fileInputRef = useRef(null)
   return (
     <div className="glass-panel" style={{
       height: '60px',
@@ -28,23 +30,64 @@ export default function Navbar({ isSimulating, setIsSimulating, onOpenSettings }
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {isHardwareConnected ? (
+          <div style={{
+            background: 'rgba(0, 255, 136, 0.2)',
+            border: '1px solid #00FF88',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontWeight: '600'
+          }}>
+            <Usb size={18} color="#00FF88" />
+            LIVE HARDWARE CONNECTED
+          </div>
+        ) : (
+          <button 
+            onClick={() => setIsSimulating(!isSimulating)}
+            style={{
+              background: isSimulating ? 'rgba(255,23,68,0.2)' : 'rgba(0, 229, 255, 0.1)',
+              border: `1px solid ${isSimulating ? 'var(--accent-red)' : 'var(--accent-cyan)'}`,
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            <Activity size={18} color={isSimulating ? 'var(--accent-red)' : 'var(--accent-cyan)'} />
+            {isSimulating ? "STOP SIMULATION" : "START SIMULATED TEST (1Hr)"}
+          </button>
+        )}
+
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          style={{ display: 'none' }} 
+          accept=".xtf,.sl2,.jpg,.png"
+          onChange={(e) => alert(`Loaded sonar log: ${e.target.files[0].name}. (Backend processing initiated...)`)}
+        />
+        
         <button 
-          onClick={() => setIsSimulating(!isSimulating)}
+          onClick={() => fileInputRef.current.click()}
           style={{
-            background: isSimulating ? 'rgba(255,23,68,0.2)' : 'rgba(0, 229, 255, 0.1)',
-            border: `1px solid ${isSimulating ? 'var(--accent-red)' : 'var(--accent-cyan)'}`,
+            background: 'rgba(41, 98, 255, 0.1)',
+            border: '1px solid var(--accent-blue)',
             color: 'white',
             padding: '8px 16px',
             borderRadius: '6px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            transition: 'all 0.3s ease'
-          }}
-        >
-          <Activity size={18} color={isSimulating ? 'var(--accent-red)' : 'var(--accent-cyan)'} />
-          {isSimulating ? "STOP SIMULATION" : "START STREAM"}
+            gap: '8px'
+          }}>
+          <UploadCloud size={18} /> UPLOAD LOG
         </button>
 
         <a href="http://127.0.0.1:8000/api/export-report" target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
