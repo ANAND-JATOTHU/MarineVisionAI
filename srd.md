@@ -3,7 +3,8 @@
 > **Project:** AI-Powered Automated Underwater Marine Debris & Anomaly Detection System  
 > **Problem Statement ID:** SIH 26057  
 > **Organization:** Ministry of Earth Sciences (MoES) — NIOT  
-> **Platform:** Local Web Application (FastAPI + Vanilla JS/Leaflet) for Edge/Topside Deployment
+> **Platform:** Local Web Application (Python FastAPI + React.js/Vite + Leaflet.js) for Edge/Topside Deployment  
+> **Repository:** [MarineVisionAI](https://github.com/ANAND-JATOTHU/MarineVisionAI.git)
 
 ---
 
@@ -49,7 +50,7 @@ Furthermore, existing high-accuracy AI solutions require heavy cloud compute, wh
    - **Physical acoustic shadow-geometry matching**
    - **Cross-ping temporal persistence** to aggressively filter out natural rocks
 
-4. **Offline UI Dashboard:** A single-process FastAPI and Leaflet.js dashboard with pre-cached OpenStreetMap tiles that allows operators to visualize detections on a map without any network dependency.
+4. **Offline UI Dashboard:** A React.js single-page application (built with Vite, served by FastAPI) with `react-leaflet` map integration and pre-cached OpenStreetMap tiles that allows operators to visualize detections on an interactive map without any network dependency.
 
 5. **Automated Geotagging & Reporting:** Maps pixel coordinates to INS/DVL pitch-roll-heave corrected real-world latitudes and longitudes, exporting structured JSON, CSV, and formatted PDF reports.
 
@@ -80,7 +81,7 @@ The Minimum Viable Product for the SIH internal/finale round will focus strictly
 | **Ingestion** | Support for `.xtf` files and fallback standard image uploads (`.png` / `.jpg`). |
 | **Processing** | Basic Lee/Frost despeckling, CLAHE contrast normalization, and row inpainting. |
 | **Inference** | YOLO11n-seg model running via ONNX Runtime on CPU / Local GPU. |
-| **UI** | Local FastAPI web server serving a static HTML/JS frontend with Leaflet map integration and pre-cached offline tiles. |
+| **UI** | React.js SPA (Vite) with `react-leaflet` map integration, served as static assets by FastAPI. Pre-cached offline map tiles. Dark Oceanic Command Center theme. |
 | **Output** | Basic JSON payload and CSV/PDF export with interpolated Lat/Long coordinates. |
 
 ---

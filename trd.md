@@ -2,7 +2,8 @@
 
 > **Project:** AI-Powered Automated Underwater Marine Debris & Anomaly Detection System  
 > **Problem Statement ID:** SIH 26057  
-> **Architectural Goal:** Deliver a 100% offline, edge-optimized instance segmentation pipeline and dashboard.
+> **Architectural Goal:** Deliver a 100% offline, edge-optimized instance segmentation pipeline and dashboard.  
+> **Repository:** [MarineVisionAI](https://github.com/ANAND-JATOTHU/MarineVisionAI.git)
 
 ---
 
@@ -23,7 +24,7 @@ The architecture follows a **linear, telemetry-aware data pipeline**:
 2. **DSP Pre-Processing:** Normalizes slant-range distortion and inpaint-repairs data dropouts caused by AUV motion.
 3. **Inference:** Executes an INT8-quantized ONNX computer vision model to isolate targets.
 4. **Fusion Filtering:** Cross-references detections against physical shadow geometry and cross-ping persistence to suppress false positives.
-5. **Presentation Layer:** Serves an offline FastAPI + Leaflet dashboard to review and export geospatial dive targets.
+5. **Presentation Layer:** Serves an offline React.js + Leaflet.js dashboard (built with Vite, served as static assets by FastAPI) to review and export geospatial dive targets.
 
 ---
 
@@ -33,12 +34,29 @@ The architecture follows a **linear, telemetry-aware data pipeline**:
 
 | Technology | Version / Detail |
 |---|---|
-| HTML5, CSS3, Vanilla JavaScript | ES6 Modules |
-| Leaflet.js | v1.9.4 |
+| React.js | 18+ (via Vite build toolchain) |
+| Vite | 5.x (build tool & dev server) |
+| Leaflet.js + react-leaflet | v1.9.4 / v4.x |
+| CSS3 Custom Properties | Dark Oceanic Command Center design system |
 
-**Technical Decision:** We explicitly avoid heavy Node.js/NPM frameworks (like React/Next.js). Using Vanilla JS and serving a static frontend directly from the backend simplifies the build process, reduces container footprint, and ensures seamless execution by AI coding agents.
+**Technical Decision:** React.js is used to build a **component-based single-page application** with reusable UI elements (detection cards, telemetry panels, map overlays) and efficient state management for real-time WebSocket updates. Vite provides fast HMR (Hot Module Replacement) during development and outputs a lightweight production bundle. The production build (`npm run build`) is served as static assets by the FastAPI backend — **no Node.js server runs in production**.
 
-**Mapping:** Leaflet.js is used with **pre-cached OpenStreetMap tiles** to guarantee the UI renders locally at sea without internet connectivity.
+**Mapping:** `react-leaflet` wraps Leaflet.js with React-friendly components. The map uses **pre-cached OpenStreetMap tiles** stored locally at `marine_vision/frontend/src/static/tiles/` to guarantee the UI renders at sea without internet connectivity.
+
+**CORS Configuration (Development Only):** During development, the React dev server (Vite on port 5173) communicates with the FastAPI backend on port 8000. FastAPI must enable CORS middleware for `http://localhost:5173` **only during development**. In production, the React build is served from the same origin — no CORS needed.
+
+```python
+# backend/api/main.py — Development CORS (remove or disable in production)
+from fastapi.middleware.cors import CORSMiddleware
+
+if os.getenv("DEV_MODE", "false") == "true":
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:5173"],  # Vite dev server only
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+```
 
 ### 2.2 Backend Stack
 
@@ -86,7 +104,7 @@ The architecture follows a **linear, telemetry-aware data pipeline**:
 
 ## 3. Database Schema (SQLite)
 
-The database relies on three core relational tables to manage missions offline.
+The database relies on five core relational tables to manage missions offline. The full DDL with column definitions, constraints, and indexes is maintained in [`backend.md`](backend.md).
 
 ### `missions`
 
@@ -130,30 +148,33 @@ The database relies on three core relational tables to manage missions offline.
 
 ## 4. API Architecture (Endpoints)
 
-The FastAPI backend will expose a clean REST interface alongside a WebSocket for live simulation.
+The FastAPI backend exposes a clean REST interface alongside a WebSocket for live simulation. All request/response payloads conform to the schemas defined in [`shared_contracts.json`](shared_contracts.json).
 
 ### REST Endpoints
 
-| Method | Route | Payload | Action |
-|---|---|---|---|
-| `POST` | `/api/mission/upload` | `multipart/form-data` (`.xtf` or image) | Parses logs, triggers the DSP pre-processing pipeline, and initiates ONNX inference. |
-| `GET` | `/api/mission/{id}/detections` | — | Returns all identified anomalies, their bounding/mask JSONs, and calculated real-world GPS coordinates. |
-| `POST` | `/api/detection/{id}/review` | `{"status": "CONFIRMED" \| "REJECTED"}` | Logs human-in-the-loop corrections to a local database for future on-shore fine-tuning. |
-| `GET` | `/api/mission/{id}/export/{format}` | — | Compiles the confirmed targets into a structured JSON, CSV, or formatted PDF dive report. |
+| Method | Route | Request | Response | Action |
+|---|---|---|---|---|
+| `GET` | `/api/health` | — | `SystemHealthCheck` | Returns model load status, database health, tile availability, and uptime for the frontend status pill. |
+| `POST` | `/api/mission/upload` | `multipart/form-data` (`.xtf`, `.jsf`, `.png`, `.jpg`) | `MissionUploadResponse` | Validates file, executes DSP → ONNX → Fusion → Geotag pipeline, saves results to database. |
+| `GET` | `/api/mission/{id}/detections` | — | `DetectionObject[]` | Returns all detected anomalies with bounding boxes, masks, GPS coordinates, and multi-signal confidence scores. |
+| `POST` | `/api/detection/{id}/review` | `ReviewStatusUpdate` | `ReviewStatusResponse` | Logs human-in-the-loop corrections (Confirm/Reject) to `operator_audit_logs` for future on-shore fine-tuning. |
+| `GET` | `/api/mission/{id}/export/{format}` | Query params (filters) | File download | Compiles filtered detections into a structured JSON, CSV, or formatted PDF dive report. |
 
 ### WebSocket Endpoint
 
-| Protocol | Route | Action |
-|---|---|---|
-| `WS` | `/ws/simulation/{id}` | Streams historical ping arrays sequentially to the frontend to simulate a live AUV mission playback. |
+| Protocol | Route | Message Schema | Action |
+|---|---|---|---|
+| `WS` | `/ws/simulation/{id}` | `WebSocketSimulationMessage` | Streams historical pings sequentially to the React frontend to simulate a live AUV mission playback. Supports message types: `ping`, `detection`, `mission_complete`, `error`. |
 
 ---
 
 ## 5. Deployment & Execution Plan
 
-**Packaging:** The entire application (FastAPI + SQLite + Frontend static files + ONNX model) is packaged inside a single Python Virtual Environment (`venv`) or a single Docker container.
+**Packaging:** The entire application is packaged in two steps:
+1. **Frontend Build:** `cd marine_vision/frontend && npm run build` outputs optimized static assets to `frontend/dist/`.
+2. **Backend Serving:** FastAPI mounts `frontend/dist/` as static files and serves the React SPA alongside the API — all within a single Python Virtual Environment (`venv`) or a single Docker container.
 
-**Tile Caching:** OpenStreetMap tiles covering the operational maritime zone are downloaded via a pre-mission script and stored in `/static/tiles/`. Leaflet routes all tile requests to this local folder.
+**Tile Caching:** OpenStreetMap tiles covering the operational maritime zone are downloaded via a pre-mission script (`edge_tests/scripts/download_tiles.py`) and stored in `marine_vision/frontend/src/static/tiles/`. The React Leaflet component routes all tile requests to this local folder.
 
 ### Target Hardware
 
@@ -172,13 +193,18 @@ If severe ocean waves cause the AUV to pitch/roll violently, the `.xtf` log will
 
 ### Data Integrity (Power Loss)
 
-AUVs and vessel networks can lose power unexpectedly. The SQLite database must be configured with:
+AUVs and vessel networks can lose power unexpectedly. The SQLite database must be configured with all 6 PRAGMAs at connection time:
 
 ```sql
-PRAGMA journal_mode = WAL;
+PRAGMA foreign_keys = ON;        -- Enforce referential integrity
+PRAGMA journal_mode = WAL;       -- Write-Ahead Logging for crash resilience
+PRAGMA synchronous = NORMAL;     -- Optimized sync without sacrificing WAL safety
+PRAGMA busy_timeout = 5000;      -- Wait 5s for lock resolution during batch inserts
+PRAGMA temp_store = MEMORY;      -- Temporary tables in RAM
+PRAGMA cache_size = -64000;      -- 64MB memory page cache
 ```
 
-Write-Ahead Logging prevents database corruption if the server goes down mid-processing.
+Write-Ahead Logging prevents database corruption if the server goes down mid-processing. The additional PRAGMAs ensure performance and concurrency safety on edge hardware.
 
 ### Local Sandboxing
 

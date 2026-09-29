@@ -2,7 +2,8 @@
 
 > **Project:** AI-Powered Automated Underwater Marine Debris & Anomaly Detection System (SIH 26057)  
 > **Database Engine:** SQLite 3 (Configured with Write-Ahead Logging WAL mode for high-throughput concurrency and power-loss fault tolerance)  
-> **Security Model:** Air-gapped single-tenant local application (Bound exclusively to `127.0.0.1:8000`)
+> **Security Model:** Air-gapped single-tenant local application (Bound exclusively to `127.0.0.1:8000`)  
+> **Repository:** [MarineVisionAI](https://github.com/ANAND-JATOTHU/MarineVisionAI.git)
 
 ---
 
@@ -174,7 +175,7 @@ INSERT OR REPLACE INTO system_config (config_key, config_value) VALUES
     ('clahe_clip_limit',         '3.0'),
     ('clahe_grid_size',          '8'),
     ('min_confidence_threshold', '0.60'),
-    ('tile_cache_directory',     '/app/static/tiles/'),
+    ('tile_cache_directory',     '/static/tiles/'),
     ('onnx_execution_provider',  'CPU');  -- Set to 'CUDA' or 'TensorRT' on Jetson boards
 ```
 
@@ -204,6 +205,6 @@ INSERT OR REPLACE INTO system_config (config_key, config_value) VALUES
 
 | Path | Permission | Purpose |
 |---|---|---|
-| `app/db/marine_vision.db` | `0600` (Read/Write) | Restricted to `niot_operator` only |
-| `sample_data/` & `/app/static/tiles/` | `0644` (Read-Only) | Prevent accidental deletion of cached map tiles or raw sonar logs |
-| `/tmp/exports/` | `0700` (Read/Write) | Temporary generation of PDF/CSV dive reports |
+| `marine_vision/backend/db/marine_vision.db` | `0600` (Read/Write) | Restricted to `niot_operator` only |
+| `marine_vision/sample_data/` & `marine_vision/frontend/src/static/tiles/` | `0644` (Read-Only) | Prevent accidental deletion of cached map tiles or raw sonar logs |
+| `marine_vision/exports/` | `0700` (Read/Write) | Temporary generation of PDF/CSV dive reports |

@@ -1,8 +1,10 @@
 # Project Flow Document (UX Architecture)
 
 > **Project:** AI-Powered Automated Underwater Marine Debris & Anomaly Detection System (SIH 26057)  
-> **Target Platform:** Single-Page Local Web Application (`localhost:8000`)  
-> **Design Persona:** Dark Oceanic Command Center
+> **Target Platform:** React.js SPA served by FastAPI (`localhost:8000`)  
+> **Design Persona:** Dark Oceanic Command Center  
+> **Frontend Stack:** React.js 18+ (Vite) + react-leaflet + CSS3 Custom Properties  
+> **Repository:** [MarineVisionAI](https://github.com/ANAND-JATOTHU/MarineVisionAI.git)
 
 ### Color System
 
@@ -23,20 +25,35 @@ The application is structured as a **non-scrolling, single-screen desktop comman
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ TOP NAVBAR (#navbar)                                                        │
+│ TOP NAVBAR (<Navbar />)                                                      │
 ├───────────────┬──────────────────────────────────────┬──────────────────────┤
-│               │ CENTER WORKSPACE (#main-workspace)   │                      │
+│               │ CENTER WORKSPACE                     │                      │
 │               │ ┌──────────────────────────────────┐ │                      │
 │               │ │ TOP: SONAR WATERFALL CANVAS       │ │                      │
-│ LEFT SIDEBAR  │ │          (#waterfall)              │ │  RIGHT DRAWER       │
-│ (#sidebar-    │ ├──────────────────────────────────┤ │  (#drawer-right)    │
-│   left)       │ │ BOTTOM: OFFLINE LEAFLET MAP       │ │                      │
-│               │ │          (#map)                    │ │                      │
+│ LEFT SIDEBAR  │ │   (<WaterfallCanvas />)            │ │  RIGHT DRAWER       │
+│ (<Sidebar />) │ ├──────────────────────────────────┤ │  (<DetectionDrawer  │
+│               │ │ BOTTOM: OFFLINE LEAFLET MAP       │ │    />)              │
+│               │ │   (<LeafletMap />)                 │ │                      │
 │               │ └──────────────────────────────────┘ │                      │
 ├───────────────┴──────────────────────────────────────┴──────────────────────┤
-│ BOTTOM STATUS FOOTER (#footer)                                              │
+│ BOTTOM STATUS FOOTER (<StatusFooter />)                                      │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
+
+**React Component Map:**
+
+| UI Region | React Component | Source File |
+|---|---|---|
+| Top Navbar | `<Navbar />` | `frontend/src/components/Navbar.jsx` |
+| Left Sidebar | `<Sidebar />` | `frontend/src/components/Sidebar.jsx` |
+| Waterfall Canvas | `<WaterfallCanvas />` | `frontend/src/components/WaterfallCanvas.jsx` |
+| Leaflet Map | `<LeafletMap />` | `frontend/src/components/LeafletMap.jsx` |
+| Right Drawer | `<DetectionDrawer />` | `frontend/src/components/DetectionDrawer.jsx` |
+| Detection Card | `<DetectionCard />` | `frontend/src/components/DetectionCard.jsx` |
+| Processing Modal | `<ProcessingModal />` | `frontend/src/components/ProcessingModal.jsx` |
+| Export Modal | `<ExportModal />` | `frontend/src/components/ExportModal.jsx` |
+| Simulation Controls | `<SimulationControls />` | `frontend/src/components/SimulationControls.jsx` |
+| Status Footer | `<StatusFooter />` | `frontend/src/components/StatusFooter.jsx` |
 
 ---
 
@@ -64,7 +81,7 @@ See [Global States & Edge Case Matrix](#3-global-states--system-edge-case-matrix
 
 #### Visual Layout
 
-A semi-transparent, **frosted-glass modal overlay** (`#processing-modal`) covering the screen center.
+A semi-transparent, **frosted-glass modal overlay** (`<ProcessingModal />`) covering the screen center.
 
 **Header:** `"Processing Sonar Log: mission_2026_09_21.xtf"`
 
@@ -180,7 +197,7 @@ Each card contains:
 
 Triggered by clicking the active **"Export Report"** button in the Top Navbar.
 
-**Modal Window** (`#export-modal`):
+**Modal Window** (`<ExportModal />`):
 
 **Filter Options:**
 

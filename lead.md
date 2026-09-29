@@ -245,7 +245,7 @@ git pull origin main
 # main.py — Uvicorn startup (MANDATORY)
 if __name__ == "__main__":
     uvicorn.run(
-        "app.main:app",
+        "backend.api.main:app",
         host="127.0.0.1",      # NEVER use "0.0.0.0"
         port=8000,
         workers=1,              # Single-process for SQLite safety
@@ -294,8 +294,8 @@ python -m venv venv
 source venv/bin/activate        # Linux/Mac
 # venv\Scripts\activate          # Windows
 
-pip install -r requirements.txt
-python -m app.main
+pip install -r backend/requirements.txt
+python -m backend.api.main
 # Expected: "Uvicorn running on http://127.0.0.1:8000"
 # Expected: "Database initialized with WAL mode"
 ```
