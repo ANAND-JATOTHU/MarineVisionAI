@@ -17,6 +17,8 @@ export default function LeafletMap({ detections, selectedDetection }) {
       <MapContainer 
         center={defaultCenter} 
         zoom={14} 
+        minZoom={10}
+        maxZoom={14}
         zoomControl={false}
         style={{ height: '100%', width: '100%', background: '#0a101d' }}
       >
@@ -24,6 +26,8 @@ export default function LeafletMap({ detections, selectedDetection }) {
         <TileLayer
           attribution='Offline MarineVision System'
           url="/tiles/{z}/{x}/{y}.png"
+          minZoom={10}
+          maxZoom={14}
         />
         
         {detections.map(det => (

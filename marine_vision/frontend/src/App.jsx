@@ -17,6 +17,15 @@ export default function App() {
   const [selectedDetection, setSelectedDetection] = useState(null)
   const [simTick, setSimTick] = useState(0)
   
+  const handleConfirm = (id) => {
+    setDetections(prev => prev.map(d => d.id === id ? { ...d, status: 'confirmed' } : d))
+  }
+
+  const handleReject = (id) => {
+    setDetections(prev => prev.filter(d => d.id !== id))
+    if (selectedDetection?.id === id) setSelectedDetection(null)
+  }
+
   // Hardware Detection Polling Simulation
   useEffect(() => {
     // In a real scenario, this polls /api/hardware-status
@@ -133,6 +142,8 @@ export default function App() {
           detections={detections} 
           selectedDetection={selectedDetection}
           setSelectedDetection={setSelectedDetection}
+          onConfirm={handleConfirm}
+          onReject={handleReject}
         />
       </div>
       

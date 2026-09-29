@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { Target, CheckCircle, XCircle } from 'lucide-react'
 
-export default function DetectionDrawer({ detections, selectedDetection, setSelectedDetection }) {
+export default function DetectionDrawer({ detections, selectedDetection, setSelectedDetection, onConfirm, onReject }) {
   return (
     <div className="glass-panel" style={{
       width: '320px',
@@ -59,10 +59,28 @@ export default function DetectionDrawer({ detections, selectedDetection, setSele
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button style={{ flex: 1, padding: '4px', background: 'rgba(41, 98, 255, 0.2)', border: '1px solid var(--accent-blue)', color: 'white', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontSize: '0.75rem', cursor: 'pointer' }}>
-                  <CheckCircle size={14} /> CONFIRM
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onConfirm(det.id); }}
+                  disabled={det.status === 'confirmed'}
+                  style={{ 
+                    flex: 1, 
+                    padding: '4px', 
+                    background: det.status === 'confirmed' ? 'rgba(0, 255, 136, 0.2)' : 'rgba(41, 98, 255, 0.2)', 
+                    border: det.status === 'confirmed' ? '1px solid #00FF88' : '1px solid var(--accent-blue)', 
+                    color: det.status === 'confirmed' ? '#00FF88' : 'white', 
+                    borderRadius: '4px', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    gap: '4px', 
+                    fontSize: '0.75rem', 
+                    cursor: det.status === 'confirmed' ? 'default' : 'pointer' 
+                  }}>
+                  <CheckCircle size={14} /> {det.status === 'confirmed' ? 'CONFIRMED' : 'CONFIRM'}
                 </button>
-                <button style={{ flex: 1, padding: '4px', background: 'rgba(255, 23, 68, 0.1)', border: '1px solid var(--border-glass)', color: 'var(--text-muted)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontSize: '0.75rem', cursor: 'pointer' }}>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); onReject(det.id); }}
+                  style={{ flex: 1, padding: '4px', background: 'rgba(255, 23, 68, 0.1)', border: '1px solid var(--border-glass)', color: 'var(--text-muted)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontSize: '0.75rem', cursor: 'pointer' }}>
                   <XCircle size={14} /> REJECT
                 </button>
               </div>
