@@ -23,7 +23,7 @@ The architecture follows a **linear, telemetry-aware data pipeline**:
 1. **Ingestion & Parsing:** Extracts ping intensities and INS (Inertial Navigation System) attitude records (pitch, roll, heave) from raw `.xtf` or `.jsf` sonar logs.
 2. **DSP Pre-Processing:** Normalizes slant-range distortion and inpaint-repairs data dropouts caused by AUV motion.
 3. **Inference:** Executes an INT8-quantized ONNX computer vision model to isolate targets.
-4. **Fusion Filtering:** Cross-references detections against physical shadow geometry and cross-ping persistence to suppress false positives.
+4. **Material & Fusion Engine:** Cross-references detections against physical shadow geometry, cross-ping persistence, and analyzes **acoustic backscatter intensity** to estimate the material (Plastic vs. Metal).
 5. **Presentation Layer:** Serves an offline React.js + Leaflet.js dashboard (built with Vite, served as static assets by FastAPI) to review and export geospatial dive targets.
 
 ---
@@ -142,6 +142,8 @@ The database relies on five core relational tables to manage missions offline. T
 | `confidence_shadow` | REAL | Acoustic shadow-geometry match `[0.0 – 1.0]` |
 | `confidence_persistence` | REAL | Cross-ping IoU tracker score `[0.0 – 1.0]` |
 | `final_confidence` | REAL | Weighted fusion of the three signals `[0.0 – 1.0]` |
+| `acoustic_reflectivity` | REAL | Ping backscatter intensity ratio against seabed ambient noise `[0.0 – 1.0]` |
+| `material_estimate` | TEXT | E.g., `'Hard (Metal/Concrete)'`, `'Medium (Hard Plastic/Wood)'`, `'Soft (Nets)'` |
 | `operator_status` | TEXT | `'UNREVIEWED'` \| `'CONFIRMED'` \| `'REJECTED'` |
 
 ---

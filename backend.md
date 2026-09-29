@@ -103,6 +103,8 @@ CREATE TABLE IF NOT EXISTS detections (
     shadow_confidence REAL NOT NULL,                -- Shadow geometry consistency score [0.0 - 1.0]
     persistence_confidence REAL NOT NULL,           -- Multi-ping IoU tracker score [0.0 - 1.0]
     final_confidence REAL NOT NULL,                 -- Composite weighted confidence score [0.0 - 1.0]
+    acoustic_reflectivity REAL,                     -- Ping backscatter intensity ratio [0.0 - 1.0]
+    material_estimate TEXT,                         -- 'Hard (Metal/Concrete)', 'Medium (Plastic/Wood)', 'Soft (Nets)'
     review_status TEXT DEFAULT 'UNREVIEWED'
         CHECK(review_status IN ('UNREVIEWED', 'CONFIRMED', 'REJECTED')),
     reviewed_at TIMESTAMP,

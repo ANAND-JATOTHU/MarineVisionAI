@@ -256,6 +256,18 @@
             }
           }
         },
+        "acoustic_reflectivity": {
+          "type": "number",
+          "range": "0.0 - 1.0",
+          "description": "Ping backscatter intensity ratio against seabed ambient noise.",
+          "example": 0.85
+        },
+        "material_estimate": {
+          "type": "string",
+          "enum": ["Hard (Metal/Concrete)", "Medium (Plastic/Wood)", "Soft (Nets)"],
+          "description": "Estimated physical material based on acoustic impedance and backscatter return.",
+          "example": "Hard (Metal/Concrete)"
+        },
         "review_status": {
           "type": "string",
           "enum": ["UNREVIEWED", "CONFIRMED", "REJECTED"],

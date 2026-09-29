@@ -1,0 +1,12 @@
+path: ../datasets
+train: images/train
+val: images/val
+
+names:
+  0: ghost_net
+  1: pipe
+  2: cylinder
+  3: shipwreck
+  4: plastic_bottle
+  5: tire
+  6: metal_debris
