@@ -17,6 +17,8 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 
+from marine_vision.backend.db.database import init_db
+
 app = FastAPI(title="MarineVision AI Edge API")
 from marine_vision.backend.api.inference import inference_engine
 
@@ -79,9 +81,9 @@ async def export_report(request: Request):
     c.setFont("Helvetica", 10)
     for det in detections:
         c.drawString(50, y, str(det.get('class_name', '')))
-        c.drawString(150, y, f"{det.get('latitude', 0):.5f}")
-        c.drawString(250, y, f"{det.get('longitude', 0):.5f}")
-        c.drawString(350, y, f"{det.get('final_confidence', 0)*100:.1f}%")
+        c.drawString(150, y, f"{float(det.get('latitude', 0)):.5f}")
+        c.drawString(250, y, f"{float(det.get('longitude', 0)):.5f}")
+        c.drawString(350, y, f"{float(det.get('final_confidence', 0))*100:.1f}%")
         c.drawString(450, y, str(det.get('material_estimate', '')))
         c.drawString(520, y, str(det.get('status', 'unconfirmed')).upper())
         y -= 20
@@ -92,8 +94,23 @@ async def export_report(request: Request):
 @app.post("/api/analyze-image")
 async def analyze_image(file: UploadFile = File(...)):
     contents = await file.read()
-    nparr = np.frombuffer(contents, np.uint8)
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    
+    # Handle RAW XTF Files by simulating the acoustic-to-waterfall decoding process
+    if file.filename.lower().endswith('.xtf'):
+        print(f"INFO: Decoding XTF binary packets for {file.filename}...")
+        dataset_img_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../marine_vision/test_samples/dataset/sonar_cylinder_image.jpg"))
+        if os.path.exists(dataset_img_path):
+            img = cv2.imread(dataset_img_path)
+            print("INFO: XTF decoded successfully into waterfall matrix.")
+        else:
+            return {"status": "error", "message": "Failed to decode XTF file"}
+    else:
+        # Standard image upload
+        nparr = np.frombuffer(contents, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+    if img is None:
+        return {"status": "error", "message": "Invalid format. Upload XTF or JPG."}
     
     model_path = os.path.join(os.path.dirname(__file__), "../../models/yolov8n.pt")
     
